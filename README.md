@@ -47,7 +47,8 @@ El Agente de LuxLogistics sigue un flujo de pensamiento lógico para garantizar 
 
 ---
 
-## 📊 Visualización de la IA en Acción
+## 📊 Visualización de la IA en Acción 
+Click para visualizar el GIF:
 ![Demo del Agente Inteligente](demo_agente.gif)
 
 ---
