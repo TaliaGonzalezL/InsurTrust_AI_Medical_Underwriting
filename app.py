@@ -3,21 +3,21 @@ import pandas as pd
 import joblib
 import os
 import google.generativeai as genai
-import re # <--- Agrega esto para búsqueda avanzada de texto
+import re # <---Se agrega esto para búsqueda avanzada de texto
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-# 1. Configuración de la página y Estética "Lux"
-st.set_page_config(page_title="LuxLogistics DaaS", page_icon="💡", layout="wide")
+# 1. Configuración de la página y Estética "InsurTrust"
+st.set_page_config(page_title="InsurTrust AI", page_icon="🛡️", layout="wide")
 
-st.title("💡 LuxLogistics DaaS")
-st.subheader("Sistema de Inteligencia Logística y Predicción de Riesgo")
+st.title("🛡️ InsurTrust AI: Inteligencia en Suscripción Médica")
+st.subheader("Sistema Agéntico de Evaluación de Riesgo para Vida y Salud")
 st.markdown("---")
 
 # 2. Cargar el "Cerebro" de Predicción (Machine Learning)
 @st.cache_resource
 def cargar_modelo():
-    return joblib.load('modelo_luxlogistics.joblib')
+    return joblib.load('modelo_insurtrust.joblib')
 
 model = cargar_modelo()
 
@@ -25,59 +25,52 @@ model = cargar_modelo()
 @st.cache_data
 def cargar_datos_csv():
     ruta_carpeta = os.path.dirname(__file__)
-    ruta_al_archivo = os.path.join(ruta_carpeta, 'data_logistica_limpia.csv')
+    ruta_al_archivo = os.path.join(ruta_carpeta, 'medical_insurance_data.csv')
     # Usamos latin-1 por si el archivo viene de Excel/Windows con acentos
     return pd.read_csv(ruta_al_archivo, encoding='latin-1') 
 
 df_ia = cargar_datos_csv()
 
-# --- DICCIONARIO DE JERARQUÍA GEOGRÁFICA ---
-regiones_por_mercado = {
-    'LATAM': ['Central America', 'South America', 'Caribbean'],
-    'USCA': ['USCA'],
-    'Europe': ['Western Europe', 'Southern Europe', 'Northern Europe', 'Eastern Europe'],
-    'Africa': ['North Africa', 'East Africa', 'West Africa', 'Central Africa', 'Southern Africa'],
-    'Pacific Asia': ['Southeast Asia', 'South Asia', 'Oceania', 'Eastern Asia', 'Western Asia', 'Central Asia']
-}
-
-# --- SIDEBAR (Global para la predicción) ---
-st.sidebar.header("Configuración del Envío")
-market = st.sidebar.selectbox("Mercado de Destino", list(regiones_por_mercado.keys()))
-lista_regiones_filtrada = regiones_por_mercado[market]
-order_region = st.sidebar.selectbox("Región del Orden", lista_regiones_filtrada)
-type_envio = st.sidebar.selectbox("Tipo de Pago", ['CASH', 'PAYMENT', 'DEBIT', 'TRANSFER'])
-shipping_mode = st.sidebar.selectbox("Modo de Envío", ['Standard Class', 'First Class', 'Second Class', 'Same Day'])
-customer_segment = st.sidebar.selectbox("Segmento de Cliente", ['Consumer', 'Corporate', 'Home Office'])
-sales = st.sidebar.number_input("Valor de la Venta (USD)", min_value=1.0, value=150.0)
-order_month = st.sidebar.slider("Mes del Pedido", 1, 12, 6)
-order_day = st.sidebar.slider("Día de la Semana (0=Lun, 6=Dom)", 0, 6, 2)
+# --- SIDEBAR (Entradas para el suscritor) ---
+st.sidebar.header("Perfil del Asegurado")
+age = st.sidebar.number_input("Edad", min_value=18, max_value=100, value=30)
+sex = st.sidebar.selectbox("Sexo", ['female', 'male'])
+bmi = st.sidebar.number_input("Índice de Masa Corporal (BMI)", min_value=10.0, max_value=50.0, value=25.0)
+children = st.sidebar.selectbox("Número de Hijos", [0, 1, 2, 3, 4, 5])
+smoker = st.sidebar.selectbox("¿Es fumador?", ['yes', 'no'])
+region = st.sidebar.selectbox("Región", ['southwest', 'southeast', 'northwest', 'northeast'])
 
 # --- INTERFAZ: PESTAÑAS (TABS) ---
-tab_prediccion, tab_chat = st.tabs(["🔮 Simulador de Riesgo", "🤖 LuxLogistics Smart Chat"])
+tab_prediccion, tab_chat = st.tabs(["🔮 Simulador de Riesgo", "🤖 InsurTrust Smart Chat"])
 
 with tab_prediccion:
-    st.header("Simulador de Riesgo de Envío")
+    st.header("🔍 Evaluación de Riesgo de Suscripción Médica")
     col1, col2 = st.columns(2)
     
     with col1:
-        st.info("Utilice el panel de la izquierda para configurar los parámetros del envío.")
+        st.info("Utilice el panel de la izquierda para configurar los parámetros del solicitante.")
         
-    if st.button("Evaluar Riesgo de Retraso"):
-        input_data = pd.DataFrame([[
-            type_envio, market, shipping_mode, customer_segment, 
-            order_region, sales, order_month, order_day
-        ]], columns=['Type', 'Market', 'Shipping Mode', 'Customer Segment', 'Order Region', 'Sales', 'order_month', 'order_day_of_week'])
-        
+    if st.button("Ejecutar Dictaminación de Riesgo"):
+        input_data = pd.DataFrame([[ # Creamos el DataFrame con las columnas exactas del dataset
+            age, sex, bmi, children, smoker, region 
+        ]], columns=['age', 'sex', 'bmi', 'children', 'smoker', 'region'])
+        # Aquí irá la lógica de predicción cuando tengamos el .joblib listo
         try:
             prediccion = model.predict(input_data)[0]
             probabilidad = model.predict_proba(input_data)[0][1]
 
-            st.markdown("### Resultado del Análisis Predictivo")
+            st.markdown("### 📊 Diagnóstico Actuarial Inteligente")
+
             if prediccion == 1:
-                st.error(f"⚠️ ALTO RIESGO DE RETRASO (Probabilidad: {probabilidad:.2%})")
-                st.info("💡 Sugerencia: Considere cambiar el modo de envío o revisar la prioridad de despacho.")
+                st.error(f"⚠️ ALTO RIESGO DE SINIESTRALIDAD (Probabilidad: {probabilidad:.2%})")
+                # Sugerencia para Riesgo Alto
+                st.info("📋 **Sugerencia de InsurTrust:** Se recomienda solicitar exámenes médicos de laboratorio o aplicar una extraprima por factores de riesgo detectados.")
             else:
-                st.success(f"✅ ENVÍO SEGURO (Probabilidad de retraso: {probabilidad:.2%})")
+                st.success(f"✅ RIESGO ESTÁNDAR DETECTADO (Confianza: {(1-probabilidad):.2%})")
+                # Fusionamos las dos sugerencias en una sola más elegante
+                st.info("💡 **Sugerencia de InsurTrust:** El perfil es elegible para **emisión inmediata** con tarifa preferente. No se requieren requisitos médicos adicionales ni revisiones manuales.")
+                st.write("El perfil cumple con los parámetros de suscripción estándar.")
+
         except Exception as e:
             st.error(f"Error en el motor: {e}")
             
@@ -89,9 +82,10 @@ with tab_chat:
         user_api_key = st.text_input("Introduce tu Google API Key (Gemini):", type="password")
         
         if user_api_key:
-            pregunta = st.text_input("Hazle una pregunta a la base de datos de LuxLogistics:")
+            pregunta = st.text_input("Hazle una pregunta a la base de datos de InsurTrust (AXA):")
             
             if pregunta:
+                res_final = ""
                 try:
                     # 1. Configuración del LLM
                     llm = ChatGoogleGenerativeAI(
@@ -102,9 +96,26 @@ with tab_chat:
                     
                     # 2. Prefix optimizado
                     prefix = """
-                    You are a Python expert. The dataframe 'df' has columns like 'Order Region' and 'Sales'.
-                    To find the top regions by sales, use: df.groupby('Order Region')['Sales'].mean().
-                    Always answer in Spanish and end with 'Final Answer:'
+                    You are a Senior Medical Underwriter at AXA. You work with a dataframe 'df'.
+                    You must answer questions by writing Python code. 
+
+                    RULES:
+                    1. Always start with 'Thought:'.
+                    2. Then use 'Action: python_repl_ast'.
+                    3. Then 'Action Input:' followed by the code.
+                    4. After seeing the 'Observation', conclude with 'Final Answer:' in Spanish.
+
+                    EXAMPLE:
+                    Question: ¿Cuántos asegurados NO fuman, tienen BMI < 25 y cargos > 13270?
+                    Thought: I need to filter the dataframe for non-smokers with BMI below 25 and charges above the average.
+                    Action: python_repl_ast
+                    Action Input: len(df[(df['smoker'] == 'no') & (df['bmi'] < 25) & (df['charges'] > 13270)])
+                    Observation: 19
+                    Final Answer: He encontrado 19 registros que cumplen con estos criterios de siniestralidad atípica.
+
+                    DATA CONTEXT:
+                    - Average charges: $13,270.42.
+                    - Target Segment: (smoker == 'no') & (bmi < 25) & (charges > 13270).
                     """
 
                     # 3. Creación del Agente
@@ -113,7 +124,8 @@ with tab_chat:
                         df_ia, 
                         verbose=True, 
                         allow_dangerous_code=True,
-                        max_iterations=5,
+                        handle_parsing_errors="Check your output! You must use the format: Thought: <your thought>, Action: python_repl_ast, Action Input: <code to run>. If you have the answer, use Final Answer: <your answer in Spanish>",# <--- ESTO ES LO QUE PIDIÓ EL ERROR
+                        max_iterations=15, # Subimos de 10 a 15 para darle más tiempo de corregirse
                         agent_type="zero-shot-react-description",
                         prefix=prefix
                     )
@@ -126,9 +138,12 @@ with tab_chat:
                         except Exception as parse_err:
                             # --- ESCUDO DE RESCATE SI HAY ERROR DE FORMATO ---
                             error_str = str(parse_err)
-                            
+                            res_final=""
+                            #1. EL FILTRO DE SEGURIDAD (PRIORIDAD ALTA)
                             if "429" in error_str or "quota" in error_str.lower():
                                 res_final = "⚠️ Límite de Google alcanzado. Espera 1 minuto."
+                                st.stop() # <--- CAMBIO CLAVE: Detiene la App aquí limpiamente
+                            #2.eL ESCUDO DE EXTRACCIÓN (SI HAY RESPUESTA PERO ESTÁ SUCIA)
                             elif "Final Answer:" in error_str:
                                 res_final = error_str.split("Final Answer:")[-1]
                             elif "Could not parse LLM output: `" in error_str:
@@ -136,24 +151,27 @@ with tab_chat:
                             else:
                                 res_final = error_str
 
-                        # --- LA GUILLOTINA DEFINITIVA (Limpieza de Links) ---
+
+                        # --- LA GUILLOTINA DEFINITIVA (Limpieza de Links y basura técnica) ---
                         # Cortamos en seco si aparece cualquiera de estas frases técnicas
                         for basura in ["For troubleshooting", "visit:", "https://", "Agent stopped"]:
                             res_final = res_final.split(basura)[0]
                         
-                        # Limpieza final de caracteres raros
+                        # Limpieza final de caracteres de código
                         res_final = res_final.replace("`", "").strip()
 
                         # --- MOSTRAR RESULTADO ---
-                        if len(res_final) > 5:
-                            st.success("✅ Análisis Completado")
+                        if len(res_final) > 0:# Bajamos de 5 a 0,Si hay CUALQUIER cosa, la mostramos
+                            st.success("✅ Análisis Completado(Recuperado)")
                             st.markdown(f"## {res_final}")
                         else:
-                            st.warning("La IA procesó los datos pero no logramos extraer una respuesta clara. Intenta reformular.")
+                            st.error("La IA se quedó en blanco. Intenta reformular.")
+                            with st.expander("Ver detalle técnico"):
+                                st.write(error_str)
 
                 except Exception as e:
-                    st.error(f"Error de conexión: {e}")
+                    st.error(f"Error crítico en el motor: {e}")
         else:
-            st.info("💡 Introduce tu API Key de Google AI Studio para comenzar.")
+            st.info("💡 Introduce tu API Key para activar el Oráculo de AXA.")
     else:
-        st.error("❌ El chat no está disponible porque falta el archivo de datos.")
+        st.error("❌ El archivo 'medical_insurance_data.csv' no está en la carpeta.")
